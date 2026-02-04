@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>strona 1 zrobiona z Claim — Kontakt</title>
+  <meta name="description" content="Skontaktuj się z strona 1 zrobiona z Claim. Zostaw dane, oddzwonimy." />
+  <style>
+    :root{
+      --bg:#0B0D12;
+      --text:#EDEEF3;
+      --muted:#8A8F9C;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.10);
+      --accent: ;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 20px;
+    }
+    .hero{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 28px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+    }
+    .h1{
+      font-size: clamp(34px, 4.2vw, 54px);
+      line-height:1.05;
+      letter-spacing:-.02em;
+      margin:0 0 12px;
+    }
+    .sub{
+      color: var(--muted);
+      font-size: 16px;
+      line-height:1.6;
+      max-width: 52ch;
+      margin:0 0 22px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom:18px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 40px rgba(255,46,110,.45);
+    }
+    .card{
+      border:1px solid var(--border);
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+    input, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      outline:none;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(255,255,255,.28);
+      box-shadow: 0 0 0 3px rgba(255,46,110,.20);
+    }
+    textarea{min-height: 110px; resize: vertical}
+    .btn{
+      width:100%;
+      margin-top:12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: var(--accent);
+      color:#fff;
+      font-weight: 700;
+      cursor:pointer;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .fine{
+      margin-top:10px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    a{color: var(--text)}
+    .footer{
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    /* honeypot */
+    .hp{
+      position:absolute !important;
+      left:-9999px !important;
+      top:auto !important;
+      width:1px !important;
+      height:1px !important;
+      overflow:hidden !important;
+      opacity:0 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pill"><span class="dot"></span> Landing leadowy •  • ID: </div>
+
+    <div class="hero">
+      <div>
+        <h1 class="h1">Gotowe landing pages<br><span style="color:var(--accent)">do zbierania leadów</span></h1>
+        <p class="sub">
+          Skontaktuj się z <strong>strona 1 zrobiona z Claim</strong>. Zostaw dane — wrócimy z odpowiedzią.
+        </p>
+        <div class="card">
+          <strong>Co dalej?</strong>
+          <div class="sub" style="margin:8px 0 0">
+            Twoje zgłoszenie trafi bezpośrednio do zespołu. Odpowiadamy możliwie szybko.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <form id="leadForm">
+          <label>Imię i nazwisko</label>
+          <input name="name" autocomplete="name" required />
+
+          <label>Email</label>
+          <input name="email" type="email" autocomplete="email" required />
+
+          <label>Telefon</label>
+          <input name="phone" autocomplete="tel" />
+
+          <label>Wiadomość (opcjonalnie)</label>
+          <textarea name="message"></textarea>
+
+          <!-- honeypot (antyspam, niewidoczne) -->
+          <input class="hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <button class="btn" type="submit">Wyślij</button>
+
+          <div class="fine">
+            Wysyłając formularz akceptujesz <a href="privacy.html">politykę prywatności</a>.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>© strona 1 zrobiona z Claim</div>
+      <div>Kontakt: <a href="mailto:"></a></div>
+    </div>
+  </div>
+
+  <script>
+  // Wklej tutaj webhook z Make (Custom webhook)
+  const MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/f273k80cl4vwmxxddpxgl01awhjqv943";
+
+  function getSlugFromPath(){
+    const parts = location.pathname.split("/").filter(Boolean);
+    return parts.length ? parts[0] : "";
+  }
+
+  document.getElementById('leadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+
+    // honeypot
+    if (payload.company) return;
+    delete payload.company;
+
+    // meta
+    payload.brand_name = "strona 1 zrobiona z Claim";
+    payload.order_id = "";
+    payload.page_url = location.href;
+    payload.slug = getSlugFromPath(); // realny slug z URL (netlify/app/<slug>/)
+    payload.user_agent = navigator.userAgent;
+	payload.recipient_email = "";
+
+
+    try{
+      const res = await fetch(MAKE_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("Bad response");
+
+      // przekieruj na stronę podziękowania w tym samym folderze
+      location.href = "thank-you.html";
+    }catch(err){
+      alert("Nie udało się wysłać. Spróbuj ponownie później.");
+    }
+  });
+  </script>
+</body>
+</html>
