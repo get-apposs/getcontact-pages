@@ -53,6 +53,10 @@ export async function handler(event) {
   if (hp) return json(200, { ok: true }); // cicho, żeby bot nie wiedział
 
   const public_path = normStr(payload.public_path, 120);
+  console.log("public_path:", public_path);
+console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
+
   const email = normStr(payload.email, 120);
   const phone = normStr(payload.phone, 40);
   const name = normStr(payload.name, 80);
