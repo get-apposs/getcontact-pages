@@ -77,7 +77,7 @@ export async function handler(event) {
   // RATE LIMIT
   const now = new Date();
   const windowMinutes = 10;
-  const limit = 1;
+  const limit = 10;
 
   const windowKey = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, "0")}${String(
     now.getUTCDate()
