@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sztuka koloru — Zostaw kontakt</title>
+  <meta name="description" content="Skontaktuj się z sztuka koloru. Zostaw dane, oddzwonimy." />
+
+  <style>
+    /* DEFAULT (dark) */
+    :root{
+      --bg:#0B0D12;
+      --text:#EDEEF3;
+      --muted:#8A8F9C;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.10);
+      --accent:#FF2E6E;
+    }
+
+    /* LIGHT THEME */
+    .theme-light {
+      --bg:#F7F8FA;
+      --text:#1A1C1F;
+      --muted:#6A6F7A;
+      --card:rgba(0,0,0,.04);
+      --border:rgba(0,0,0,.12);
+      --accent:#0066FF;
+    }
+
+    /* BLUE THEME */
+    .theme-blue {
+      --bg:#0A1224;
+      --text:#E9ECF5;
+      --muted:#8C93A8;
+      --card:rgba(255,255,255,.05);
+      --border:rgba(255,255,255,.12);
+      --accent:#3B82F6;
+    }
+
+    /* YELLOW THEME */
+    .theme-yellow {
+      --bg:#111214;
+      --text:#F5F5F5;
+      --muted:#9A9FA8;
+      --card:rgba(255,255,255,.05);
+      --border:rgba(255,255,255,.10);
+      --accent:#FACC15;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      transition: background .3s ease, color .3s ease;
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 20px;
+    }
+    .hero{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 28px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+    }
+    .h1{
+      font-size: clamp(34px, 4.2vw, 54px);
+      line-height:1.05;
+      letter-spacing:-.02em;
+      margin:0 0 12px;
+    }
+    .sub{
+      color: var(--muted);
+      font-size: 16px;
+      line-height:1.6;
+      max-width: 52ch;
+      margin:0 0 22px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom:18px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 40px var(--accent);
+    }
+    .card{
+      border:1px solid var(--border);
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+    input, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      outline:none;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(255,255,255,.28);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.20);
+    }
+    textarea{min-height: 110px; resize: vertical}
+    .btn{
+      width:100%;
+      margin-top:12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: var(--accent);
+      color:#fff;
+      font-weight: 700;
+      cursor:pointer;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .fine{
+      margin-top:10px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    a{color: var(--text)}
+    .footer{
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .hp{
+      position:absolute !important;
+      left:-9999px !important;
+      top:auto !important;
+      width:1px !important;
+      height:1px !important;
+      overflow:hidden !important;
+      opacity:0 !important;
+    }
+
+
+.logo-pill {
+  max-width: 150px;
+  max-height: 40px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+@media (max-width: 480px) {
+  .logo-pill {
+    max-width: 120px;
+    max-height: 32px;
+  }
+}
+
+
+  </style>
+</head>
+
+<body class="Blue">
+  <div class="wrap">
+    <div class="pill">
+  <img src="https://getcontact.online/wp-content/uploads/fluentform/ff-16ca3a43e8833985c7bc24420927c117-ff-nowe-pom-p-niskie.png" alt="sztuka koloru logo" class="logo-pill" />
+  sztuka koloru
+</div>
+
+    <div class="hero">
+      <div>
+        <h1 class="h1">Pierwsze informacje możesz otrzymać jeszcze dziś</h1>
+        <p class="sub">
+          Po przesłaniu formularza oddzwonimy i przekażemy konkretne szczegóły dopasowane do Twojej sytuacji.
+        </p>
+        <div class="card">
+          <strong>Co dalej?</strong>
+          <div class="sub" style="margin:8px 0 0">
+            Twoje zgłoszenie trafi bezpośrednio do zespołu. Odpowiadamy możliwie szybko.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <form id="leadForm">
+          <label>Imię i nazwisko</label>
+          <input name="name" autocomplete="name" required />
+
+          <label>Email</label>
+          <input name="email" type="email" autocomplete="email" required />
+
+          <label>Telefon</label>
+          <input name="phone" autocomplete="tel" />
+
+          <input class="hp" type="text" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <button class="btn" type="submit">Wyślij</button>
+
+          <div class="fine">
+            Wysyłając formularz akceptujesz <a href="privacy.html">politykę prywatności</a>.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div> <a href:"https://GetContact.Online">GetContact.Online</a> © Strona dla sztuka koloru</div>
+      <div>Kontakt: <a href="mailto:"></a></div>
+    </div>
+  </div>
+
+<script>(function(){const form=document.getElementById('leadForm');const btn=form.querySelector('button[type="submit"]');function getUTM(name){return new URLSearchParams(location.search).get(name)||'';}form.addEventListener('submit',async(e)=>{e.preventDefault();btn.disabled=true;const public_path=location.pathname.split('/').filter(Boolean).pop()||'';const fd=new FormData(form);const payload={public_path,name:(fd.get('name')||'').toString().trim(),email:(fd.get('email')||'').toString().trim(),phone:(fd.get('phone')||'').toString().trim(),hp:(fd.get('hp')||'').toString(),utm_source:getUTM('utm_source'),utm_campaign:getUTM('utm_campaign')};try{const res=await fetch('/.netlify/functions/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(res.ok&&data.ok){form.innerHTML='<strong>Dziękujemy!</strong><div class="sub" style="margin:8px 0 0">Zgłoszenie zostało wysłane. Odezwie się doradca.</div>';}else{alert('Nie udało się wysłać. Spróbuj ponownie za chwilę.');btn.disabled=false;}}catch(err){alert('Błąd połączenia. Spróbuj ponownie.');btn.disabled=false;}});})();</script>
+
+
+</body>
+</html>
