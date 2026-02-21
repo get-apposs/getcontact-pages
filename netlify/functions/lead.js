@@ -30,7 +30,6 @@ function isEmail(v) {
 }
 
 function isPhone(v) {
-  // luźna walidacja PL/EU, bez przesady
   return /^[0-9+\s()-]{7,20}$/.test(v);
 }
 
@@ -48,31 +47,24 @@ export async function handler(event) {
     return json(400, { ok: false, error: "bad_json" });
   }
 
-  // honeypot (ukryte pole w formularzu)
+  // honeypot
   const hp = normStr(payload.hp, 200);
-  if (hp) return json(200, { ok: true }); // cicho, żeby bot nie wiedział
+  if (hp) return json(200, { ok: true });
 
   const public_path = normStr(payload.public_path, 120);
-  console.log("public_path:", public_path);
-console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
-console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
-
   const email = normStr(payload.email, 120);
   const phone = normStr(payload.phone, 40);
   const name = normStr(payload.name, 80);
   const service = normStr(payload.service, 80);
-
   const utm_source = normStr(payload.utm_source, 120);
   const utm_campaign = normStr(payload.utm_campaign, 120);
 
   if (!public_path) return json(400, { ok: false, error: "missing_public_path" });
-
-  // minimum: wymagamy email lub telefon (albo oba)
   if (!email && !phone) return json(400, { ok: false, error: "missing_contact" });
   if (email && !isEmail(email)) return json(400, { ok: false, error: "bad_email" });
   if (phone && !isPhone(phone)) return json(400, { ok: false, error: "bad_phone" });
 
-  // IP hash (nie zapisujemy surowego IP)
+  // IP hash
   const ip =
     (event.headers["x-nf-client-connection-ip"] ||
       event.headers["x-forwarded-for"] ||
@@ -82,11 +74,10 @@ console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
 
   const ipHash = ip ? sha256(ip) : "noip";
 
-  // --- RATE LIMIT (prosty) ---
-  // okno 10 minut, limit 10 requestów / IP / landing
+  // RATE LIMIT
   const now = new Date();
   const windowMinutes = 10;
-  const limit = 10;
+  const limit = 1;
 
   const windowKey = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, "0")}${String(
     now.getUTCDate()
@@ -106,7 +97,6 @@ console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
     )
   ).toISOString();
 
-  // Upsert licznik
   const { data: rlRow, error: rlErr } = await supabase
     .from("rate_limits")
     .select("count, window_ends_at")
@@ -129,10 +119,10 @@ console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
     if (updErr) return json(500, { ok: false, error: "rl_update_failed" });
   }
 
-  // --- lookup landing po public_path ---
+  // LOOKUP LANDING
   const { data: landing, error: landingErr } = await supabase
     .from("landings")
-    .select("id, active")
+    .select("id, user_id, active")
     .eq("public_path", public_path)
     .maybeSingle();
 
@@ -140,10 +130,11 @@ console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
   if (!landing) return json(404, { ok: false, error: "landing_not_found" });
   if (landing.active === false) return json(403, { ok: false, error: "landing_inactive" });
 
-  // --- zapis lead ---
+  // INSERT LEAD (with user_id!)
   const { error: leadErr } = await supabase.from("leads").insert([
     {
       landing_id: landing.id,
+      user_id: landing.user_id,   // ← KLUCZOWE
       phone,
       email,
       name,
@@ -153,7 +144,10 @@ console.log("HAS_SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE);
     },
   ]);
 
-  if (leadErr) return json(500, { ok: false, error: "lead_insert_failed" });
+  if (leadErr) {
+    console.error("leadErr:", leadErr);
+    return json(500, { ok: false, error: "lead_insert_failed" });
+  }
 
   return json(200, { ok: true });
 }
