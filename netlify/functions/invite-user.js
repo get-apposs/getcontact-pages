@@ -7,6 +7,7 @@ const supabase = createClient(
 );
 
 const REDIRECT_TO = "https://panel.getcontact.online/auth/callback";
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
 
 function json(status, body) {
   return {
@@ -19,6 +20,20 @@ function json(status, body) {
   };
 }
 
+function getClientIp(event) {
+  const h = event.headers || {};
+  return (
+    h["x-nf-client-connection-ip"] ||
+    h["client-ip"] ||
+    (h["x-forwarded-for"] || "").split(",")[0].trim() ||
+    "unknown"
+  );
+}
+
+function normalize(value, max = 255) {
+  return String(value || "").trim().replace(/\s+/g, " ").slice(0, max);
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
 }
@@ -27,11 +42,35 @@ function isValidPublicPath(value) {
   return /^[a-z0-9-]{1,100}$/.test(value);
 }
 
-function sanitizeName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .slice(0, 100);
+async function verifyTurnstile(token, ip) {
+  if (!TURNSTILE_SECRET) return false;
+  if (!token) return false;
+
+  const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      secret: TURNSTILE_SECRET,
+      response: token,
+      remoteip: ip
+    })
+  });
+
+  if (!resp.ok) return false;
+
+  const data = await resp.json();
+  return data.success === true;
+}
+
+async function checkRateLimit(bucket, limit, windowSeconds) {
+  const { data, error } = await supabase.rpc("check_rate_limit", {
+    p_bucket: bucket,
+    p_limit: limit,
+    p_window_seconds: windowSeconds
+  });
+
+  if (error) throw error;
+  return data?.[0] || { allowed: false, retry_after_seconds: windowSeconds };
 }
 
 async function findUserIdByEmail(email) {
@@ -41,10 +80,7 @@ async function findUserIdByEmail(email) {
     .eq("email", email)
     .maybeSingle();
 
-  if (error) {
-    throw new Error("profile_lookup_failed");
-  }
-
+  if (error) throw error;
   return data?.id || null;
 }
 
@@ -60,9 +96,17 @@ export async function handler(event) {
     return json(400, { ok: false, error: "bad_json" });
   }
 
-  const email = String(payload.email || "").trim().toLowerCase();
-  const public_path = String(payload.public_path || "").trim().toLowerCase();
-  const name = sanitizeName(payload.name);
+  const ip = getClientIp(event);
+
+  const email = normalize(payload.email, 255).toLowerCase();
+  const public_path = normalize(payload.public_path, 100).toLowerCase();
+  const name = normalize(payload.name, 100);
+  const hp = normalize(payload.hp, 200);
+  const turnstileToken = normalize(payload.turnstileToken, 4000);
+
+  if (hp) {
+    return json(400, { ok: false, error: "invalid_request" });
+  }
 
   if (!email || !public_path) {
     return json(400, { ok: false, error: "missing_fields" });
@@ -76,6 +120,33 @@ export async function handler(event) {
     return json(400, { ok: false, error: "invalid_public_path" });
   }
 
+  try {
+    const ipLimit = await checkRateLimit(`invite:ip:${ip}`, 3, 600);
+    if (!ipLimit.allowed) {
+      return json(429, {
+        ok: false,
+        error: "rate_limited",
+        retry_after: ipLimit.retry_after_seconds
+      });
+    }
+
+    const emailLimit = await checkRateLimit(`invite:email:${email}`, 3, 3600);
+    if (!emailLimit.allowed) {
+      return json(429, {
+        ok: false,
+        error: "rate_limited",
+        retry_after: emailLimit.retry_after_seconds
+      });
+    }
+  } catch {
+    return json(500, { ok: false, error: "rate_limit_failed" });
+  }
+
+  const turnstileOk = await verifyTurnstile(turnstileToken, ip);
+  if (!turnstileOk) {
+    return json(400, { ok: false, error: "captcha_failed" });
+  }
+
   const { data: landing, error: landingErr } = await supabase
     .from("landings")
     .select("id, public_path, user_id, customer_id, active")
@@ -83,7 +154,7 @@ export async function handler(event) {
     .maybeSingle();
 
   if (landingErr) {
-    return json(500, { ok: false, error: "landing_check_failed" });
+    return json(500, { ok: false, error: "request_failed" });
   }
 
   if (!landing) {
