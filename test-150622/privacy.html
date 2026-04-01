@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Polityka prywatności — test</title>
+
+  <style>
+    /* DEFAULT (dark) */
+    :root{
+      --bg:#0B0D12;
+      --text:#EDEEF3;
+      --muted:#8A8F9C;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.10);
+      
+    }
+
+    /* LIGHT THEME */
+    .theme-light {
+      --bg:#F7F8FA;
+      --text:#1A1C1F;
+      --muted:#6A6F7A;
+      --card:rgba(0,0,0,.04);
+      --border:rgba(0,0,0,.12);
+    }
+
+    /* BLUE THEME */
+    .theme-blue {
+      --bg:#0A1224;
+      --text:#E9ECF5;
+      --muted:#8C93A8;
+      --card:rgba(255,255,255,.05);
+      --border:rgba(255,255,255,.12);
+    }
+
+    /* YELLOW THEME */
+    .theme-yellow {
+      --bg:#111214;
+      --text:#F5F5F5;
+      --muted:#9A9FA8;
+      --card:rgba(255,255,255,.05);
+      --border:rgba(255,255,255,.10);
+    }
+
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+      padding:56px 20px;
+    }
+
+    h1{
+      font-size:34px;
+      line-height:1.1;
+      margin:0 0 12px;
+    }
+
+    h2{
+      font-size:20px;
+      margin:32px 0 12px;
+      color:var(--text);
+    }
+
+    p,li{
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    a{
+      color:var(--accent);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:24px;
+    }
+
+    .logo-pill{
+      max-width:150px;
+      max-height:40px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      padding:20px 24px;
+      border-radius:16px;
+      margin:24px 0;
+    }
+
+    .back{
+      display:inline-block;
+      margin-top:32px;
+      color:var(--accent);
+      font-weight:600;
+    }
+  </style>
+</head>
+
+<body class="theme-dark">
+  <div class="wrap">
+
+    <div class="pill">
+      <img src="https://getcontact.online/wp-content/uploads/fluentform/ff-cf9613c1038a02ebd4d07308f25531f2-ff-logo-sztuka-koloru-biale-tlo.png" alt="test logo" class="logo-pill" />
+      Polityka prywatności
+    </div>
+
+    <h1>Polityka prywatności</h1>
+    <p>Dokument dotyczy strony: <strong>test</strong> (subdomena: <strong>test</strong>).</p>
+
+    <div class="card">
+      <h2>Administrator danych</h2>
+      <p>Administratorem danych osobowych jest właściciel strony test 66-700 test, test, PL.</p>
+    </div>
+
+    <div class="card">
+      <h2>Zakres danych</h2>
+      <p>W formularzu kontaktowym użytkownik może podać m.in.: imię i nazwisko, adres e-mail, numer telefonu oraz treść wiadomości.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cel przetwarzania</h2>
+      <ul>
+        <li>kontakt w sprawie zapytania przesłanego przez formularz,</li>
+        <li>obsługa korespondencji i udzielenie odpowiedzi.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Podstawa prawna</h2>
+      <p>Podstawą przetwarzania jest prawnie uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO) polegający na obsłudze zapytań oraz komunikacji.</p>
+    </div>
+
+    <div class="card">
+      <h2>Odbiorcy danych</h2>
+      <p>Dane mogą być przekazane podmiotom wspierającym obsługę strony i poczty elektronicznej. Zgłoszenia trafiają na adres: <a href="mailto:joachim.kudelski@gmail.com">joachim.kudelski@gmail.com</a>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Okres przechowywania</h2>
+      <p>Dane są przechowywane przez okres niezbędny do obsługi zapytania oraz ewentualnej dalszej korespondencji.</p>
+    </div>
+
+    <div class="card">
+      <h2>Prawa użytkownika</h2>
+      <ul>
+        <li>dostęp do danych, sprostowanie, usunięcie, ograniczenie przetwarzania,</li>
+        <li>sprzeciw wobec przetwarzania,</li>
+        <li>wniesienie skargi do organu nadzorczego.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Kontakt</h2>
+      <p>W sprawach związanych z danymi osobowymi prosimy o kontakt: <a href="mailto:joachim.kudelski@gmail.com">joachim.kudelski@gmail.com</a>.</p>
+    </div>
+
+  </div>
+</body>
+</html>
