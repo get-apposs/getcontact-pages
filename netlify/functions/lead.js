@@ -129,21 +129,17 @@ export async function handler(event) {
   }
 
   // Sprawdzenie landingu
-  const { data: landing, error: landingErr } = await supabase
-    .from("landings")
-    .select("id")
-    .eq("public_path", public_path)
-    .eq("active", true)
-    .single();
+const { data: landingId, error: landingErr } = await supabase
+  .rpc("get_landing_id", { p_public_path: public_path });
 
-  if (landingErr || !landing) {
-    return json(404, { ok: false, error: "landing_not_found" }, origin);
-  }
+if (landingErr || !landingId) {
+  return json(404, { ok: false, error: "landing_not_found" }, origin);
+}
 
   // Insert leada
   const { error: insertErr } = await supabase
     .from("leads")
-    .insert([{ landing_id: landing.id, name, email, phone }]);
+    .insert([{ landing_id: landingId, name, email, phone }]);
 
   if (insertErr) {
     console.error("lead_insert_failed", insertErr.message);
