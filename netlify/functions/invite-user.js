@@ -7,70 +7,35 @@ const supabase = createClient(
 );
 
 const REDIRECT_TO = "https://panel.getcontact.online/auth/callback";
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
+const INTERNAL_TOKEN = process.env.INVITE_INTERNAL_TOKEN;
 
-function json(status, body) {
-  return {
-    statusCode: status,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store"
-    },
-    body: JSON.stringify(body)
-  };
-}
+const LIMITS = {
+  name: 100,
+  email: 254,
+  public_path: 100,
+};
 
-function getClientIp(event) {
-  const h = event.headers || {};
-  return (
-    h["x-nf-client-connection-ip"] ||
-    h["client-ip"] ||
-    (h["x-forwarded-for"] || "").split(",")[0].trim() ||
-    "unknown"
-  );
-}
-
-function normalize(value, max = 255) {
+function normalize(value, max) {
   return String(value || "").trim().replace(/\s+/g, " ").slice(0, max);
 }
 
 function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function isValidPublicPath(value) {
   return /^[a-z0-9-]{1,100}$/.test(value);
 }
 
-async function verifyTurnstile(token, ip) {
-  if (!TURNSTILE_SECRET) return false;
-  if (!token) return false;
-
-  const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      secret: TURNSTILE_SECRET,
-      response: token,
-      remoteip: ip
-    })
-  });
-
-  if (!resp.ok) return false;
-
-  const data = await resp.json();
-  return data.success === true;
-}
-
-async function checkRateLimit(bucket, limit, windowSeconds) {
-  const { data, error } = await supabase.rpc("check_rate_limit", {
-    p_bucket: bucket,
-    p_limit: limit,
-    p_window_seconds: windowSeconds
-  });
-
-  if (error) throw error;
-  return data?.[0] || { allowed: false, retry_after_seconds: windowSeconds };
+function json(status, body) {
+  return {
+    statusCode: status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+    body: JSON.stringify(body),
+  };
 }
 
 async function findUserIdByEmail(email) {
@@ -89,6 +54,15 @@ export async function handler(event) {
     return json(405, { ok: false, error: "method_not_allowed" });
   }
 
+  const incomingToken =
+    event.headers?.["x-internal-token"] ||
+    event.headers?.["X-Internal-Token"] ||
+    "";
+
+  if (!INTERNAL_TOKEN || incomingToken !== INTERNAL_TOKEN) {
+    return json(401, { ok: false, error: "unauthorized" });
+  }
+
   let payload;
   try {
     payload = JSON.parse(event.body || "{}");
@@ -96,19 +70,11 @@ export async function handler(event) {
     return json(400, { ok: false, error: "bad_json" });
   }
 
-  const ip = getClientIp(event);
+  const email       = normalize(payload.email,       LIMITS.email).toLowerCase();
+  const public_path = normalize(payload.public_path, LIMITS.public_path).toLowerCase();
+  const name        = normalize(payload.name,        LIMITS.name);
 
-  const email = normalize(payload.email, 255).toLowerCase();
-  const public_path = normalize(payload.public_path, 100).toLowerCase();
-  const name = normalize(payload.name, 100);
-  const hp = normalize(payload.hp, 200);
-  const turnstileToken = normalize(payload.turnstileToken, 4000);
-
-  if (hp) {
-    return json(400, { ok: false, error: "invalid_request" });
-  }
-
-  if (!email || !public_path) {
+  if (!email || !public_path || !name) {
     return json(400, { ok: false, error: "missing_fields" });
   }
 
@@ -120,37 +86,12 @@ export async function handler(event) {
     return json(400, { ok: false, error: "invalid_public_path" });
   }
 
-  try {
-    const ipLimit = await checkRateLimit(`invite:ip:${ip}`, 3, 600);
-    if (!ipLimit.allowed) {
-      return json(429, {
-        ok: false,
-        error: "rate_limited",
-        retry_after: ipLimit.retry_after_seconds
-      });
-    }
-
-    const emailLimit = await checkRateLimit(`invite:email:${email}`, 3, 3600);
-    if (!emailLimit.allowed) {
-      return json(429, {
-        ok: false,
-        error: "rate_limited",
-        retry_after: emailLimit.retry_after_seconds
-      });
-    }
-  } catch {
-    return json(500, { ok: false, error: "rate_limit_failed" });
-  }
-
-  const turnstileOk = await verifyTurnstile(turnstileToken, ip);
-  if (!turnstileOk) {
-    return json(400, { ok: false, error: "captcha_failed" });
-  }
-
+  // ✅ Zawężone do active = true — nie przypinamy do wyłączonych landingów
   const { data: landing, error: landingErr } = await supabase
     .from("landings")
-    .select("id, public_path, user_id, customer_id, active")
+    .select("id, user_id")
     .eq("public_path", public_path)
+    .eq("active", true)
     .maybeSingle();
 
   if (landingErr) {
@@ -162,58 +103,79 @@ export async function handler(event) {
   }
 
   if (landing.user_id) {
-    return json(200, {
-      ok: true,
-      skipped: true,
-      reason: "landing_already_connected"
-    });
+    return json(200, { ok: true, skipped: true, reason: "already_connected" });
   }
 
   let userId = null;
   let invitedNewUser = false;
 
-  try {
-    userId = await findUserIdByEmail(email);
-  } catch {
-    return json(500, { ok: false, error: "user_lookup_failed" });
-  }
+  const { data: invited, error: inviteErr } =
+    await supabase.auth.admin.inviteUserByEmail(email, {
+      redirectTo: REDIRECT_TO,
+      data: { name },
+    });
 
-  if (!userId) {
-    const { data: invited, error: inviteErr } =
-      await supabase.auth.admin.inviteUserByEmail(email, {
-        redirectTo: REDIRECT_TO,
-        data: { name }
-      });
-
-    if (inviteErr) {
-      return json(500, { ok: false, error: "invite_failed" });
-    }
-
+  if (!inviteErr) {
+    // ✅ Nowy user — id mamy bezpośrednio z invite, nie potrzebujemy profiles
     userId = invited?.user?.id || null;
     invitedNewUser = true;
+  } else {
+    // ✅ Bardziej odporny warunek — toLowerCase zamiast exact match
+    const msg = inviteErr.message || "";
+
+    if (msg.toLowerCase().includes("already")) {
+      // User istnieje — szukamy w profiles
+      try {
+        userId = await findUserIdByEmail(email);
+      } catch {
+        return json(500, { ok: false, error: "user_lookup_failed" });
+      }
+
+      // ✅ Fallback timing — trigger mógł jeszcze nie zdążyć wpisać do profiles
+      if (!userId) {
+        await new Promise((r) => setTimeout(r, 200));
+        try {
+          userId = await findUserIdByEmail(email);
+        } catch {
+          return json(500, { ok: false, error: "user_lookup_failed" });
+        }
+      }
+
+      // Stary user sprzed triggera — nie ma go w profiles
+      if (!userId) {
+        console.error("user_not_in_profiles", email);
+        return json(500, { ok: false, error: "user_not_found_in_profiles" });
+      }
+    } else {
+      console.error("invite_failed", msg);
+      return json(500, { ok: false, error: "invite_failed" });
+    }
   }
 
   if (!userId) {
     return json(500, { ok: false, error: "missing_user_id" });
   }
 
+  // ✅ Race condition guard — update tylko jeśli user_id nadal null
   const { error: updateErr } = await supabase
     .from("landings")
     .update({
       user_id: userId,
       customer_id: userId,
-      active: true
+      active: true,
     })
     .eq("id", landing.id)
     .is("user_id", null);
 
   if (updateErr) {
+    console.error("landing_update_failed", updateErr.message);
     return json(500, { ok: false, error: "landing_update_failed" });
   }
 
-  const { data: freshLanding, error: freshErr } = await supabase
+  // Weryfikacja końcowa
+  const { data: fresh, error: freshErr } = await supabase
     .from("landings")
-    .select("id, public_path, user_id, customer_id, active")
+    .select("user_id")
     .eq("id", landing.id)
     .maybeSingle();
 
@@ -221,14 +183,12 @@ export async function handler(event) {
     return json(500, { ok: false, error: "landing_reload_failed" });
   }
 
-  if (!freshLanding?.user_id) {
+  if (!fresh?.user_id) {
     return json(409, { ok: false, error: "landing_connect_conflict" });
   }
 
   return json(200, {
     ok: true,
     invited_new_user: invitedNewUser,
-    user_id: freshLanding.user_id,
-    landing: freshLanding
   });
 }
