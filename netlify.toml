@@ -7,7 +7,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# ✅ Bezpieczne nagłówki HTTP — nie ingerują w działanie aplikacji
 [[headers]]
   for = "/*"
   [headers.values]
@@ -16,7 +15,6 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
-# ✅ Dodatkowy pas bezpieczeństwa — pliki które nie powinny być dostępne publicznie
 [[redirects]]
   from = "/.env*"
   to = "/404"
