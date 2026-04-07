@@ -111,9 +111,8 @@ export async function handler(event) {
 
   const { data: invited, error: inviteErr } =
     await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: REDIRECT_TO,
-      data: { name },
-    });
+  redirectTo: REDIRECT_TO,
+});
 
   if (!inviteErr) {
     // ✅ Nowy user — id mamy bezpośrednio z invite, nie potrzebujemy profiles
