@@ -93,7 +93,7 @@ function json(status, body, origin) {
   return { statusCode: status, headers, body: JSON.stringify(body) };
 }
 
-export async function handler(event) {
+module.exports.handler = async function (event) {
   const origin = event.headers?.origin || event.headers?.Origin || "";
   const ip =
     event.headers?.["x-nf-client-connection-ip"] ||
