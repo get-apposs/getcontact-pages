@@ -179,22 +179,12 @@ module.exports.handler = async function (event) {
     .from("leads")
     .insert([{ landing_id: landingId, name, email, phone }]);
 
- /* 
+
  if (insertErr) {
     console.error("lead_insert_failed", insertErr.message);
     return json(500, { ok: false, error: "lead_insert_failed" }, origin);
   }
-  */
 
-  if (insertErr) {
-    console.error("lead_insert_failed", JSON.stringify({
-      message: insertErr.message,
-      code: insertErr.code,
-      details: insertErr.details,
-      hint: insertErr.hint
-    }));
-    return json(500, { ok: false, error: "lead_insert_failed" }, origin);
-  }
 
   return json(200, { ok: true }, origin);
 };
