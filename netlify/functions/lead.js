@@ -55,6 +55,17 @@ async function verifyTurnstile(token, ip) {
   return result.success === true;
 }
 
+return {
+  statusCode: 403,
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    ok: false,
+    error: "captcha_failed",
+    verifyData
+  }),
+};
+
+
 //  Rate limit przez Supabase RPC
 async function checkRateLimit(bucket, limit, windowSeconds) {
   const { data, error } = await supabase
