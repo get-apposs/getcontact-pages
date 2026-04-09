@@ -1,5 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-import { createHash } from "crypto";
+const { createClient } = require("@supabase/supabase-js");
+const { createHash } = require("crypto");;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
