@@ -56,12 +56,11 @@ async function verifyTurnstile(token, ip) {
 }
 
 return {
-  statusCode: 403,
+  statusCode: 200,
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
     ok: false,
-    error: "captcha_failed",
-    verifyData
+    debug: verifyData
   }),
 };
 
